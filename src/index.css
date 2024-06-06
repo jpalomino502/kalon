@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+.nav-link:hover {
+    color: white;
+    font-weight: bold;
+}
+
+.active {
+    color: white;
+    font-weight: bold;
+}
+@media screen and (max-width: 768px) {
+  .active {
+    color: black;
+    font-weight: bold;
+  }
+  a:hover{
+    background-color: black;
+  }
+}
