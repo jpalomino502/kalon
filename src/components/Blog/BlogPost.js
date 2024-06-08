@@ -1,4 +1,3 @@
-// src/components/Blog/BlogPost.js
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { db } from '../../config/firebaseConfig';
@@ -27,6 +26,7 @@ const BlogPost = () => {
   return (
     <div className="p-4">
       <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
+      <img src={post.imageUrl} alt={post.title} className="object-cover h-full w-full mb-4" />
       <p>{post.content}</p>
     </div>
   );

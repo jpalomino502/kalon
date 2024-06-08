@@ -1,24 +1,27 @@
 import React, { useState, useEffect } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Menu } from "@headlessui/react";
 import { MenuIcon, XIcon, SearchIcon } from "@heroicons/react/outline";
-import logo from '../../assets/logo.svg';
-import { auth } from '../../config/firebaseConfig';
+import logo from "../../assets/logo.svg";
+import { auth } from "../../config/firebaseConfig";
 
 const Header = () => {
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(currentUser => {
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       setUser(currentUser);
     });
 
     return () => unsubscribe();
   }, []);
 
-  const closeMenu = () => {
-    setOpen(false);
+  const handleNavigation = (path) => {
+    setOpen(false); // Cierra el menú después de la redirección
+    navigate(path);
   };
 
   return (
@@ -29,38 +32,25 @@ const Header = () => {
           <span className="text-2xl font-bold">WebNova</span>
         </Link>
         <nav className="hidden md:flex space-x-6 items-center">
-          <NavLink to="/" className="nav-link" activeClassName="active" exact>
-            Inicio
-          </NavLink>
-          <NavLink to="/courses" className="nav-link" activeClassName="active">
-            Cursos
-          </NavLink>
-          <NavLink to="/blog" className="nav-link" activeClassName="active">
-            Blog
-          </NavLink>
+          <NavLink to="/" text="Inicio" isActive={location.pathname === "/"} />
+          <NavLink to="/courses" text="Cursos" isActive={location.pathname === "/courses"} />
+          <NavLink to="/blog" text="Blog" isActive={location.pathname === "/blog"} />
           <div className="relative">
-            <input 
-              type="text" 
-              placeholder="Buscar" 
+            <input
+              type="text"
+              placeholder="Buscar"
               className="p-2 pl-10 rounded-md text-black"
             />
             <SearchIcon className="absolute left-3 top-2 h-5 w-5 text-gray-400" />
           </div>
           {user ? (
-            <NavLink to="/profile" className="nav-link" activeClassName="active">
-              Perfil
-            </NavLink>
+            <NavLink to="/profile" text="Perfil" isActive={location.pathname === "/profile"} />
           ) : (
-            <NavLink to="/login" className="nav-link" activeClassName="active">
-              Acceder
-            </NavLink>
+            <NavLink to="/login" text="Acceder" isActive={location.pathname === "/login"} />
           )}
         </nav>
-        <Menu 
-          as="div" 
-          className="md:hidden relative z-50" 
-          onClose={() => setOpen(false)} // Cerrar el menú después de la navegación
-        >
+
+        <Menu as="div" className="md:hidden relative z-50">
           <Menu.Button className="focus:outline-none" onClick={() => setOpen(!open)}>
             {open ? (
               <XIcon className="h-6 w-6" />
@@ -70,62 +60,15 @@ const Header = () => {
           </Menu.Button>
           {open && (
             <div className="absolute right-0 mt-2 w-48 bg-white text-black shadow-lg rounded-md">
-              <Menu.Item>
-                {({ active }) => (
-                  <NavLink
-                    to="/"
-                    className={`block px-4 py-2 text-sm nav-link ${
-                      active ? "font-bold text-black" : ""
-                    }`}
-                    activeClassName="active"
-                    onClick={closeMenu}
-                  >
-                    Inicio
-                  </NavLink>
-                )}
-              </Menu.Item>
-              <Menu.Item>
-                {({ active }) => (
-                  <NavLink
-                    to="/courses"
-                    className={`block px-4 py-2 text-sm nav-link ${
-                      active ? "font-bold text-black" : ""
-                    }`}
-                    activeClassName="active"
-                    onClick={closeMenu}
-                  >
-                    Cursos
-                  </NavLink>
-                )}
-              </Menu.Item>
-              <Menu.Item>
-                {({ active }) => (
-                  <NavLink
-                    to="/blog"
-                    className={`block px-4 py-2 text-sm nav-link ${
-                      active ? "font-bold text-black" : ""
-                    }`}
-                    activeClassName="active"
-                    onClick={closeMenu}
-                  >
-                    Blog
-                  </NavLink>
-                )}
-              </Menu.Item>
-              <Menu.Item>
-                {({ active }) => (
-                  <NavLink
-                    to={user ? "/profile" : "/login"}
-                    className={`block px-4 py-2 text-sm nav-link ${
-                      active ? "font-bold text-black" : ""
-                    }`}
-                    activeClassName="active"
-                    onClick={closeMenu}
-                  >
-                    {user ? "Perfil" : "Acceder"}
-                  </NavLink>
-                )}
-              </Menu.Item>
+              <MenuItem path="/" text="Inicio" onClick={handleNavigation} location={location} />
+              <MenuItem path="/courses" text="Cursos" onClick={handleNavigation} location={location} />
+              <MenuItem path="/blog" text="Blog" onClick={handleNavigation} location={location} />
+              <MenuItem
+                path={user ? "/profile" : "/login"}
+                text={user ? "Perfil" : "Acceder"}
+                onClick={handleNavigation}
+                location={location}
+              />
             </div>
           )}
         </Menu>
@@ -133,5 +76,23 @@ const Header = () => {
     </header>
   );
 };
+
+const NavLink = ({ to, text, isActive }) => (
+  <Link
+    to={to}
+    className={`nav-link ${isActive ? "active" : ""}`}
+  >
+    {text}
+  </Link>
+);
+
+const MenuItem = ({ path, text, onClick, location }) => (
+  <button
+    className={`block w-full px-4 py-2 text-sm nav-link cursor-pointer text-left focus:outline-none ${location.pathname === path ? "active" : ""}`}
+    onClick={() => onClick(path)}
+  >
+    {text}
+  </button>
+);
 
 export default Header;
