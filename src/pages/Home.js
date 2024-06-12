@@ -1,15 +1,16 @@
 import React from 'react';
+import 'react-lazy-load-image-component/src/effects/blur.css'; // Importa el efecto de desenfoque si lo deseas
 import courseImage1 from '../assets/courseImage1.jpg';
-import headerBackground from '../assets/headerBackground.jpg'; // Ruta de la imagen de fondo
+import headerBackground from '../assets/headerBackground.jpg';
 
 const Home = () => {
   return (
     <div className="home">
       <div
         className="relative h-96 bg-cover bg-center text-white flex items-center justify-center"
-        style={{ backgroundImage: `url(${headerBackground})` }} // Establece la imagen de fondo
+        style={{ backgroundImage: `url(${headerBackground})` }}
       >
-        <div className="absolute inset-0 bg-black opacity-50"></div> {/* Capa de superposición */}
+        <div className="absolute inset-0 bg-black opacity-50"></div>
         <div className="text-center relative z-10">
           <h1 className="text-3xl md:text-5xl font-bold mb-4">
             La escuela de música ideal para tu formación

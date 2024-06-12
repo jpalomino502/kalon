@@ -1,4 +1,3 @@
-// src/components/Admin/BlogForm.js
 import React, { useState, useEffect } from 'react';
 import { db, storage } from '../../config/firebaseConfig';
 import { collection, addDoc, doc, updateDoc, getDoc } from 'firebase/firestore';
@@ -40,7 +39,12 @@ const BlogForm = () => {
 
     if (file) {
       const storageRef = ref(storage, `blogPosts/${file.name}`);
-      await uploadBytes(storageRef, file);
+      const uploadTask = uploadBytes(storageRef, file);
+
+      // Esperar a que la tarea de carga se complete
+      await uploadTask;
+
+      // Obtener la URL de descarga después de que la tarea de carga se complete
       imageURL = await getDownloadURL(storageRef);
     }
 
@@ -60,8 +64,9 @@ const BlogForm = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg">
+      <h1 className="text-2xl font-semibold mb-4">{postId ? 'Edit Blog Post' : 'Create New Blog Post'}</h1>
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-gray-700">Title</label>
           <input
@@ -99,7 +104,7 @@ const BlogForm = () => {
         </div>
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           Save
         </button>

@@ -22,7 +22,7 @@ const BlogList = () => {
       {posts.map(post => (
         <div key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="bg-gray-200 h-48 flex items-center justify-center">
-            <img src={post.imageUrl || 'default-image.png'} alt={post.title} className="object-cover h-full w-full" />
+            <img src={post.imageURL || 'default-image.png'} alt={post.title} className="object-cover h-full w-full" />
           </div>
           <div className="p-4">
             <h2 className="text-xl font-bold mb-2">{post.title}</h2>

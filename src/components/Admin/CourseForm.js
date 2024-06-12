@@ -59,10 +59,11 @@ const CourseForm = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 bg-white rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold text-black mb-4">Crear / Editar Curso</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Title</label>
+          <label className="block text-sm font-medium text-black">Título</label>
           <input
             type="text"
             name="title"
@@ -73,7 +74,7 @@ const CourseForm = () => {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Description</label>
+          <label className="block text-sm font-medium text-black">Descripción</label>
           <textarea
             name="description"
             value={course.description}
@@ -83,14 +84,14 @@ const CourseForm = () => {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Video</label>
-          <input type="file" onChange={handleFileChange} />
+          <label className="block text-sm font-medium text-black">Video</label>
+          <input type="file" onChange={handleFileChange} className="mt-1 block w-full" />
         </div>
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
         >
-          Save
+          Guardar
         </button>
       </form>
     </div>

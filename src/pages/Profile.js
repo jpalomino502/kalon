@@ -1,58 +1,58 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { auth, db, storage } from '../config/firebaseConfig';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import Avatar from 'react-avatar-edit';
-import { FaImage, FaSave, FaEdit, FaTimes } from 'react-icons/fa';
+// Profile.js
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { auth, db, storage } from "../config/firebaseConfig";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { FaImage, FaSave, FaEdit, FaTimes, FaUserCog } from "react-icons/fa";
+import Avatar from "react-avatar-edit";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { currentUser, userRole } = useAuth();
   const [loading, setLoading] = useState(true);
   const [profileData, setProfileData] = useState({
-    description: '',
-    twitter: '',
-    linkedin: '',
-    photoURL: '',
-    backgroundURL: '',
+    name: "",
+    description: "",
+    photoURL: "",
+    email: "",
+    createdAt: "",
   });
   const [editing, setEditing] = useState(false);
   const [newPhoto, setNewPhoto] = useState(null);
-  const [newBackground, setNewBackground] = useState(null);
   const [photoLoading, setPhotoLoading] = useState(false);
-  const [backgroundLoading, setBackgroundLoading] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+    const loadProfileData = async () => {
       if (!currentUser) {
-        navigate('/login');
+        navigate("/login");
       } else {
-        setUser(currentUser);
-        const roleDoc = await getDoc(doc(db, 'roles', currentUser.uid));
-        if (roleDoc.exists()) {
-          setIsAdmin(roleDoc.data().role === 'admin');
-        }
-
-        const profileDoc = await getDoc(doc(db, 'profiles', currentUser.uid));
+        const profileDoc = await getDoc(doc(db, "profiles", currentUser.uid));
         if (profileDoc.exists()) {
           setProfileData(profileDoc.data());
+        } else {
+          setProfileData((prevData) => ({
+            ...prevData,
+            email: currentUser.email,
+            createdAt: currentUser.metadata.creationTime,
+          }));
         }
       }
       setLoading(false);
-    });
+    };
 
-    return () => unsubscribe();
-  }, [navigate]);
+    loadProfileData();
+  }, [currentUser, navigate]);
 
   const handleSignOut = () => {
-    auth.signOut()
+    auth
+      .signOut()
       .then(() => {
-        navigate('/login');
+        navigate("/login");
       })
       .catch((error) => {
-        console.error('Error al cerrar sesión:', error);
+        console.error("Error al cerrar sesión:", error);
       });
   };
 
@@ -68,15 +68,11 @@ const Profile = () => {
     setNewPhoto(preview);
   };
 
-  const handleBackgroundCrop = (preview) => {
-    setNewBackground(preview);
-  };
-
   const handleSave = async () => {
-    if (user) {
+    if (currentUser) {
       if (newPhoto) {
         setPhotoLoading(true);
-        const photoRef = ref(storage, `profile_photos/${user.uid}`);
+        const photoRef = ref(storage, `profile_photos/${currentUser.uid}`);
         const response = await fetch(newPhoto);
         const blob = await response.blob();
         await uploadBytes(photoRef, blob);
@@ -86,49 +82,47 @@ const Profile = () => {
           photoURL,
         }));
         setPhotoLoading(false);
-
-        // Actualizamos la URL de la foto de perfil en Firestore
-        await setDoc(doc(db, 'profiles', user.uid), {
-          ...profileData,
-          photoURL, // Actualizamos la URL de la foto de perfil
-        });
       }
-      if (newBackground) {
-        setBackgroundLoading(true);
-        const backgroundRef = ref(storage, `profile_backgrounds/${user.uid}`);
-        const response = await fetch(newBackground);
-        const blob = await response.blob();
-        await uploadBytes(backgroundRef, blob);
-        const backgroundURL = await getDownloadURL(backgroundRef);
-        setProfileData((prevData) => ({
-          ...prevData,
-          backgroundURL,
-        }));
-        setBackgroundLoading(false);
 
-        // Actualizamos la URL del fondo de perfil en Firestore
-        await setDoc(doc(db, 'profiles', user.uid), {
-          ...profileData,
-          backgroundURL, // Actualizamos la URL del fondo de perfil
-        });
-      }
+      await setDoc(doc(db, "profiles", currentUser.uid), profileData);
       setEditing(false);
     }
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Cargando...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Cargando...
+      </div>
+    );
   }
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="bg-white rounded-lg shadow-md p-8 max-w-3xl w-full">
-        <div className="bg-black h-40 rounded-t-lg flex justify-center items-center relative">
-          {profileData.backgroundURL && (
-            <img src={profileData.backgroundURL} alt="Fondo de perfil" className="absolute inset-0 w-full h-full object-cover rounded-t-lg" />
-          )}
+    <div className="flex justify-center items-center bg-white p-4">
+      <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full text-black">
+        <div className="relative flex justify-center items-center h-48 bg-black rounded-t-lg">
+          <button
+            className="absolute top-2 right-2 text-black"
+            onClick={() => {
+              if (editing) {
+                handleSave();
+              } else {
+                setEditing(!editing);
+              }
+            }}
+          >
+            {editing ? (
+              <FaSave className="text-2xl" />
+            ) : (
+              <FaEdit className="text-2xl" />
+            )}
+          </button>
           {profileData.photoURL ? (
-            <img src={profileData.photoURL} alt="Foto de perfil" className="h-28 w-28 rounded-full border-4 border-white absolute -bottom-14" />
+            <img
+              src={profileData.photoURL}
+              alt="Foto de perfil"
+              className="h-28 w-28 rounded-full border-4 border-white absolute -bottom-14"
+            />
           ) : (
             <div className="h-28 w-28 rounded-full border-4 border-white absolute -bottom-14 bg-gray-200 flex justify-center items-center">
               <span className="text-gray-500">No Photo</span>
@@ -136,118 +130,79 @@ const Profile = () => {
           )}
         </div>
         <div className="text-center mt-20">
-          {user && (
+          {currentUser && (
             <>
-              <h2 className="text-2xl font-bold text-black">{user.displayName || 'Usuario'}</h2>
-              <p className="text-sm text-gray-600">@{user.displayName ? user.displayName.toLowerCase().replace(/ /g, '') : 'usuario'}</p>
-              <p className="text-sm mt-2">{user.email}</p>
               {editing ? (
-                <div>
+                <>
+                  <input
+                    type="text"
+                    name="name"
+                    value={profileData.name}
+                    onChange={handleInputChange}
+                    className="border border-gray-300 p-2 w-full rounded mt-2 bg-white text-black"
+                    placeholder="Nombre"
+                  />
                   <textarea
                     name="description"
                     value={profileData.description}
                     onChange={handleInputChange}
-                    className="border border-gray-300 p-2 w-full rounded mt-2"
+                    className="border border-gray-300 p-2 w-full rounded mt-2 bg-white text-black"
                     placeholder="Descripción"
-                  />
-                  <input
-                    type="text"
-                    name="twitter"
-                    value={profileData.twitter}
-                    onChange={handleInputChange}
-                    className="border border-gray-300 p-2 w-full rounded mt-2"
-                    placeholder="Twitter"
-                  />
-                  <input
-                    type="text"
-                    name="linkedin"
-                    value={profileData.linkedin}
-                    onChange={handleInputChange}
-                    className="border border-gray-300 p-2 w-full rounded mt-2"
-                    placeholder="LinkedIn"
                   />
                   <div className="flex justify-center mt-4">
                     <Avatar
-                      width={390}
-                      height={295}
+                      width={300}
+                      height={200}
                       onCrop={handleCrop}
                       onClose={() => setNewPhoto(null)}
                       src={profileData.photoURL}
-                      label={<><FaImage className="mr-2" />Foto de Perfil</>}
+                      label={
+                        <>
+                          <FaImage className="mr-2" />
+                          Foto de Perfil
+                        </>
+                      }
                     />
                   </div>
-                  <div className="flex justify-center mt-4">
-                    <Avatar
-                      width={390}
-                      height={295}
-                      onCrop={handleBackgroundCrop}
-                      onClose={() => setNewBackground(null)}
-                      src={profileData.backgroundURL}
-                      label={<><FaImage className="mr-2" />Fondo de Perfil</>}
-                    />
-                  </div>
-                  {photoLoading && <p className="text-blue-500 mt-2">Subiendo foto...</p>}
-                  {backgroundLoading && <p className="text-blue-500 mt-2">Subiendo fondo...</p>}
-                  <div className="flex justify-center space-x-4 mt-4">
-                    <button
-                      className="bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800 flex items-center"
-                      onClick={handleSave}
-                    >
-                      <FaSave className="mr-2" />Guardar
-                    </button>
-                    <button
-                      className="bg-white text-black py-2 px-4 rounded-md border border-black hover:bg-gray-200 flex items-center"
-                      onClick={() => setEditing(false)}
-                    >
-                      <FaTimes className="mr-2" />Cancelar
-                    </button>
-                  </div>
-                </div>
+                  {photoLoading && (
+                    <p className="text-blue-500 mt-2">Subiendo foto...</p>
+                  )}
+                </>
               ) : (
                 <>
-                  <p className="text-sm mt-2">{profileData.description}</p>
-                  {profileData.twitter && (
-                    <p className="text-sm text-blue-500">
-                      <a href={`https://twitter.com/${profileData.twitter}`} target="_blank" rel="noopener noreferrer">
-                        Twitter: @{profileData.twitter}
-                      </a>
-                    </p>
-                  )}
-                  {profileData.linkedin && (
-                    <p className="text-sm text-blue-500">
-                      <a href={`https://linkedin.com/in/${profileData.linkedin}`} target="_blank" rel="noopener noreferrer">
-                        LinkedIn: {profileData.linkedin}
-                      </a>
-                    </p>
-                  )}
-                  <div className="flex justify-center space-x-4 mt-4">
-                    <button
-                      className="bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800 flex items-center"
-                      onClick={() => setEditing(true)}
-                    >
-                      <FaEdit className="mr-2" />Editar Perfil
-                    </button>
-                  </div>
+                  <h2 className="text-2xl font-semibold text-black">
+                    {profileData.name || "Usuario"}
+                  </h2>
+                  <p className="text-sm mt-2 text-gray-600">
+                    {profileData.email}
+                  </p>
+                  <p className="text-sm mt-2 text-gray-600">
+                    Creado:{" "}
+                    {new Date(profileData.createdAt).toLocaleDateString()}
+                  </p>
+                  <p className="text-sm mt-2 text-gray-600">
+                    {profileData.description}
+                  </p>
                 </>
               )}
             </>
           )}
-          {isAdmin && (
-            <div className="flex justify-center mt-4">
-              <button
-                className="bg-white text-black py-2 px-4 rounded-md border border-black hover:bg-gray-200 flex items-center"
-                onClick={() => navigate('/admin')}
-              >
-                <FaEdit className="mr-2" />Ir al Panel de Administración
-              </button>
-            </div>
-          )}
           <div className="flex justify-center mt-4">
+            {userRole === "admin" && (
+              <button
+                className="bg-gray-800 text-white py-2 px-4 rounded-md hover:bg-gray-900 flex items-center"
+                onClick={() => navigate("/admin")}
+              >
+                <FaUserCog className="mr-2" />
+                Admin
+              </button>
+            )}
             <button
-              className="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 flex items-center"
+              className="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 flex items-center ml-4"
               onClick={handleSignOut}
             >
-              <FaTimes className="mr-2" />Cerrar Sesión
+              <FaTimes className="mr-2" />
+              Salir
             </button>
           </div>
         </div>
@@ -257,4 +212,3 @@ const Profile = () => {
 };
 
 export default Profile;
-

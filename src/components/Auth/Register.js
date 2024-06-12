@@ -3,6 +3,7 @@ import { auth, googleProvider, db } from '../../config/firebaseConfig'; // Aseg�
 import { createUserWithEmailAndPassword, signInWithPopup, updateProfile } from 'firebase/auth'; // Importamos updateProfile
 import { Link, useNavigate } from 'react-router-dom';
 import { FaUserPlus, FaGoogle } from 'react-icons/fa';
+import { doc, setDoc } from 'firebase/firestore'; // Importamos setDoc y doc
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -22,6 +23,14 @@ const Register = () => {
         displayName: name
       });
 
+      // Guardamos la fecha de creación del usuario en Firestore
+      await setDoc(doc(db, 'profiles', user.uid), {
+        email: user.email,
+        name: name,
+        createdAt: user.metadata.creationTime,
+        photoURL: ''
+      });
+
       // Navegamos al perfil del usuario
       navigate('/profile');
     } catch (error) {
@@ -34,15 +43,12 @@ const Register = () => {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
-      // Actualizamos el perfil del usuario con su nombre y foto de perfil
-      await updateProfile(user, {
-        displayName: user.displayName,
-        photoURL: user.photoURL // Establecemos la foto de perfil del usuario en su perfil
-      });
-
-      // Guardamos la URL de la foto de perfil en Firestore
-      await db.collection('profile_photos').doc(user.uid).set({
-        photoURL: user.photoURL
+      // Guardamos la fecha de creación del usuario en Firestore
+      await setDoc(doc(db, 'profiles', user.uid), {
+        email: user.email,
+        name: user.displayName,
+        createdAt: user.metadata.creationTime,
+        photoURL: user.photoURL || ''
       });
 
       // Navegamos al perfil del usuario

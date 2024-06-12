@@ -37,13 +37,11 @@ my-course-platform/
 │   │   ├── AuthContexts.js
 │   ├── hooks/
 │   ├── pages/
+│   │   ├── AdminDashboard.js
 │   │   ├── Blog.js
 │   │   ├── Courses.js
 │   │   ├── Home.js
-│   │   ├── Login.js
 │   │   ├── Profile.js
-│   │   ├── AdminDashboard.js
-│   ├── styles/
 │   ├── utils/
 │   ├── App.js
 │   ├── index.css
