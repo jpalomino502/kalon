@@ -1,7 +1,7 @@
 // src/components/PrivateRoute.js
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 const PrivateRoute = ({ redirectPath = '/login' }) => {
   const { currentUser, userRole } = useAuth();

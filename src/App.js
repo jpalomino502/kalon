@@ -1,46 +1,66 @@
-import React, { Suspense } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Header from "./components/Header/Header";
-import Footer from "./components/Footer/Footer";
-import PrivateRoute from "./components/PrivateRoute";
+import React, { Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
+import Header from './components/Header/Header';
+import Footer from './components/Footer/Footer';
+import PrivateRoute from './components/Routes/PrivateRoute';
+import LoadingSkeleton from './components/Loading/LoadingSkeleton';
+import AdminCoursesList from './components/Admin/AdminCoursesList';
+import AdminBlogsList from './components/Admin/AdminBlogsList';
+import AdminSidebar from './components/Admin/AdminSidebar';
+import AdminTabs from './components/Admin/AdminTabs';
 
-// Carga perezosa de componentes
-const Home = React.lazy(() => import("./pages/Home"));
-const Courses = React.lazy(() => import("./pages/Courses"));
-const Blog = React.lazy(() => import("./pages/Blog"));
-const Profile = React.lazy(() => import("./pages/Profile"));
-const BlogPost = React.lazy(() => import("./components/Blog/BlogPost"));
-const Login = React.lazy(() => import("./components/Auth/Login"));
-const Register = React.lazy(() => import("./components/Auth/Register"));
-const ForgotPassword = React.lazy(() => import("./components/Auth/ForgotPassword"));
-const AdminDashboard = React.lazy(() => import("./pages/AdminDashboard"));
-const CourseForm = React.lazy(() => import("./components/Admin/CourseForm"));
-const BlogForm = React.lazy(() => import("./components/Admin/BlogForm"));
+const Home = React.lazy(() => import('./pages/Home'));
+const Courses = React.lazy(() => import('./pages/Courses'));
+const Blog = React.lazy(() => import('./pages/Blog'));
+const Profile = React.lazy(() => import('./pages/Profile'));
+const EditProfile = React.lazy(() => import('./pages/EditProfile'));
+const BlogPost = React.lazy(() => import('./components/Blog/BlogPost'));
+const Login = React.lazy(() => import('./components/Auth/Login'));
+const Register = React.lazy(() => import('./components/Auth/Register'));
+const ForgotPassword = React.lazy(() => import('./components/Auth/ForgotPassword'));
+
+const AdminEmpty = () => <div></div>;
+
+const AdminDashboardLayout = () => {
+  return (
+    <div className="flex">
+      <AdminSidebar />
+      <div className="flex-1 flex flex-col p-6">
+        <AdminTabs />
+        <Outlet /> {/* Utilizando 'Outlet' para mostrar el contenido de las rutas hijas */}
+      </div>
+    </div>
+  );
+};
 
 function App() {
+  const { currentUser } = useAuth();
+
   return (
     <Router>
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow">
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<LoadingSkeleton />}>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/courses" element={<Courses />} />
               <Route path="/blog" element={<Blog />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile" element={currentUser ? <Profile /> : <Navigate to="/login" />} />
+              <Route path="/edit-profile" element={currentUser ? <EditProfile /> : <Navigate to="/login" />} />
               <Route path="/blog/:postId" element={<BlogPost />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              
-              {/* Rutas protegidas para la administración */}
+              <Route path="/login" element={!currentUser ? <Login /> : <Navigate to="/profile" />} />
+              <Route path="/register" element={!currentUser ? <Register /> : <Navigate to="/profile" />} />
+              <Route path="/forgot-password" element={!currentUser ? <ForgotPassword /> : <Navigate to="/profile" />} />
               <Route element={<PrivateRoute role="admin" />}>
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/admin/course/new" element={<CourseForm />} />
-                <Route path="/admin/course/:courseId" element={<CourseForm />} />
-                <Route path="/admin/blog/new" element={<BlogForm />} />
-                <Route path="/admin/blog/:postId" element={<BlogForm />} />
+                <Route path="/admin" element={<AdminDashboardLayout />}>
+                  <Route index element={<AdminEmpty />} />
+                  <Route path="blogs" element={<AdminBlogsList />} />
+                  <Route path="courses" element={<AdminCoursesList />} />
+                  <Route path="blog/edit/:postId" element={<AdminBlogsList />} />
+                  <Route path="course/edit/:courseId" element={<AdminCoursesList />} />
+                </Route>
               </Route>
             </Routes>
           </Suspense>

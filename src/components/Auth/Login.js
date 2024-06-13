@@ -53,7 +53,7 @@ const Login = () => {
             required
             className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-black focus:outline-none"
           />
-          <button type="submit" className="flex items-center justify-center w-full px-4 py-2 font-bold text-white bg-black rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black">
+          <button type="submit" className="flex items-center justify-center w-full px-4 py-2 font-bold text-white bg-[#D91604] text-white rounded-md hover:bg-red-700">
             <FaSignInAlt className="mr-2" /> Iniciar Sesión
           </button>
         </form>

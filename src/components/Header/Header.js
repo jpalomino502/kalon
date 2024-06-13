@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Menu } from "@headlessui/react";
 import { MenuIcon, XIcon, SearchIcon } from "@heroicons/react/outline";
-import logo from "../../assets/logo.svg";
+import logo from "../../assets/logo.png";
 import { auth } from "../../config/firebaseConfig";
 
 const Header = () => {
@@ -20,16 +20,15 @@ const Header = () => {
   }, []);
 
   const handleNavigation = (path) => {
-    setOpen(false); // Cierra el menú después de la redirección
+    setOpen(false);
     navigate(path);
   };
 
   return (
-    <header className="bg-black text-white">
-      <div className="container mx-auto flex justify-between items-center p-4">
+    <header className="bg-white text-black shadow-md">
+      <div className="container mx-auto flex justify-between items-center py-2">
         <Link to="/" className="flex items-center">
-          <img src={logo} alt="WebNova Logo" className="h-10 mr-3" />
-          <span className="text-2xl font-bold">WebNova</span>
+          <img src={logo} alt="Kalon Musical Academy Logo" className="h-16 ml-3 mr-3 lg:ml-4" />
         </Link>
         <nav className="hidden md:flex space-x-6 items-center">
           <NavLink to="/" text="Inicio" isActive={location.pathname === "/"} />
@@ -39,7 +38,7 @@ const Header = () => {
             <input
               type="text"
               placeholder="Buscar"
-              className="p-2 pl-10 rounded-md text-black"
+              className="p-2 pl-10 rounded-md text-black border border-gray-400"
             />
             <SearchIcon className="absolute left-3 top-2 h-5 w-5 text-gray-400" />
           </div>
@@ -51,15 +50,15 @@ const Header = () => {
         </nav>
 
         <Menu as="div" className="md:hidden relative z-50">
-          <Menu.Button className="focus:outline-none" onClick={() => setOpen(!open)}>
+          <Menu.Button className="focus:outline-none mr-4" onClick={() => setOpen(!open)}>
             {open ? (
-              <XIcon className="h-6 w-6" />
+              <XIcon className="h-8 w-8" />
             ) : (
-              <MenuIcon className="h-6 w-6" />
+              <MenuIcon className="h-8 w-8" />
             )}
           </Menu.Button>
           {open && (
-            <div className="absolute right-0 mt-2 w-48 bg-white text-black shadow-lg rounded-md">
+            <div className="absolute right-4 mt-2 w-48 bg-white text-black shadow-lg rounded-md">
               <MenuItem path="/" text="Inicio" onClick={handleNavigation} location={location} />
               <MenuItem path="/courses" text="Cursos" onClick={handleNavigation} location={location} />
               <MenuItem path="/blog" text="Blog" onClick={handleNavigation} location={location} />

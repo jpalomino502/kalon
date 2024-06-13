@@ -9,12 +9,12 @@ body {
 }
 
 .nav-link:hover {
-    color: white;
+    color: black;
     font-weight: bold;
 }
 
 .active {
-    color: white;
+    color: black;
     font-weight: bold;
 }
 .bg-profile-background {

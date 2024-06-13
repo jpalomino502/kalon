@@ -1,209 +1,184 @@
-// Profile.js
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { auth, db, storage } from "../config/firebaseConfig";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { FaImage, FaSave, FaEdit, FaTimes, FaUserCog } from "react-icons/fa";
-import Avatar from "react-avatar-edit";
+import { db } from "../config/firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
+import { FaStar, FaUserEdit, FaUserShield } from "react-icons/fa";
+import LoadingSkeleton from "../components/Loading/LoadingSkeleton";
 
 const Profile = () => {
+  const [userData, setUserData] = useState(null);
+  const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
-  const { currentUser, userRole } = useAuth();
-  const [loading, setLoading] = useState(true);
-  const [profileData, setProfileData] = useState({
-    name: "",
-    description: "",
-    photoURL: "",
-    email: "",
-    createdAt: "",
-  });
-  const [editing, setEditing] = useState(false);
-  const [newPhoto, setNewPhoto] = useState(null);
-  const [photoLoading, setPhotoLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const loadProfileData = async () => {
+    const fetchUserData = async () => {
       if (!currentUser) {
         navigate("/login");
-      } else {
-        const profileDoc = await getDoc(doc(db, "profiles", currentUser.uid));
-        if (profileDoc.exists()) {
-          setProfileData(profileDoc.data());
-        } else {
-          setProfileData((prevData) => ({
-            ...prevData,
-            email: currentUser.email,
-            createdAt: currentUser.metadata.creationTime,
-          }));
-        }
+        return;
       }
-      setLoading(false);
+
+      try {
+        const userDoc = await getDoc(doc(db, "profiles", currentUser.uid));
+        if (userDoc.exists()) {
+          setUserData(userDoc.data());
+        }
+
+        const roleDoc = await getDoc(doc(db, "roles", currentUser.uid));
+        if (roleDoc.exists() && roleDoc.data().role === "admin") {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
     };
 
-    loadProfileData();
+    fetchUserData();
   }, [currentUser, navigate]);
 
-  const handleSignOut = () => {
-    auth
-      .signOut()
-      .then(() => {
-        navigate("/login");
-      })
-      .catch((error) => {
-        console.error("Error al cerrar sesión:", error);
-      });
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setProfileData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
-
-  const handleCrop = (preview) => {
-    setNewPhoto(preview);
-  };
-
-  const handleSave = async () => {
-    if (currentUser) {
-      if (newPhoto) {
-        setPhotoLoading(true);
-        const photoRef = ref(storage, `profile_photos/${currentUser.uid}`);
-        const response = await fetch(newPhoto);
-        const blob = await response.blob();
-        await uploadBytes(photoRef, blob);
-        const photoURL = await getDownloadURL(photoRef);
-        setProfileData((prevData) => ({
-          ...prevData,
-          photoURL,
-        }));
-        setPhotoLoading(false);
-      }
-
-      await setDoc(doc(db, "profiles", currentUser.uid), profileData);
-      setEditing(false);
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/login");
+    } catch (error) {
+      console.error("Failed to log out", error);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        Cargando...
-      </div>
-    );
+  if (!userData) {
+    return <LoadingSkeleton />;
   }
 
   return (
-    <div className="flex justify-center items-center bg-white p-4">
-      <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full text-black">
-        <div className="relative flex justify-center items-center h-48 bg-black rounded-t-lg">
-          <button
-            className="absolute top-2 right-2 text-black"
-            onClick={() => {
-              if (editing) {
-                handleSave();
-              } else {
-                setEditing(!editing);
-              }
-            }}
-          >
-            {editing ? (
-              <FaSave className="text-2xl" />
-            ) : (
-              <FaEdit className="text-2xl" />
-            )}
-          </button>
-          {profileData.photoURL ? (
-            <img
-              src={profileData.photoURL}
-              alt="Foto de perfil"
-              className="h-28 w-28 rounded-full border-4 border-white absolute -bottom-14"
-            />
-          ) : (
-            <div className="h-28 w-28 rounded-full border-4 border-white absolute -bottom-14 bg-gray-200 flex justify-center items-center">
-              <span className="text-gray-500">No Photo</span>
-            </div>
-          )}
-        </div>
-        <div className="text-center mt-20">
-          {currentUser && (
-            <>
-              {editing ? (
-                <>
-                  <input
-                    type="text"
-                    name="name"
-                    value={profileData.name}
-                    onChange={handleInputChange}
-                    className="border border-gray-300 p-2 w-full rounded mt-2 bg-white text-black"
-                    placeholder="Nombre"
+    <div className="container mx-auto my-8 p-4">
+      <div className="flex flex-col lg:flex-row items-center lg:items-start">
+        <div className="lg:w-1/3 w-full lg:pr-8">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <div className="text-center">
+              <div className="w-24 h-24 mx-auto rounded-full bg-gray-200 flex items-center justify-center">
+                {userData.photoURL && (
+                  <img
+                    src={userData.photoURL}
+                    alt="Profile"
+                    className="w-full h-full rounded-full"
                   />
-                  <textarea
-                    name="description"
-                    value={profileData.description}
-                    onChange={handleInputChange}
-                    className="border border-gray-300 p-2 w-full rounded mt-2 bg-white text-black"
-                    placeholder="Descripción"
-                  />
-                  <div className="flex justify-center mt-4">
-                    <Avatar
-                      width={300}
-                      height={200}
-                      onCrop={handleCrop}
-                      onClose={() => setNewPhoto(null)}
-                      src={profileData.photoURL}
-                      label={
-                        <>
-                          <FaImage className="mr-2" />
-                          Foto de Perfil
-                        </>
-                      }
-                    />
-                  </div>
-                  {photoLoading && (
-                    <p className="text-blue-500 mt-2">Subiendo foto...</p>
-                  )}
-                </>
-              ) : (
-                <>
-                  <h2 className="text-2xl font-semibold text-black">
-                    {profileData.name || "Usuario"}
-                  </h2>
-                  <p className="text-sm mt-2 text-gray-600">
-                    {profileData.email}
-                  </p>
-                  <p className="text-sm mt-2 text-gray-600">
-                    Creado:{" "}
-                    {new Date(profileData.createdAt).toLocaleDateString()}
-                  </p>
-                  <p className="text-sm mt-2 text-gray-600">
-                    {profileData.description}
-                  </p>
-                </>
-              )}
-            </>
-          )}
-          <div className="flex justify-center mt-4">
-            {userRole === "admin" && (
+                )}
+              </div>
+              <h2 className="text-xl font-bold mt-4">{userData.name}</h2>
+              <p className="text-gray-600 mt-4 text-sm">{userData.email}</p>
+              <p className="text-gray-600 mt-2 text-sm">{userData.bio}</p>
               <button
-                className="bg-gray-800 text-white py-2 px-4 rounded-md hover:bg-gray-900 flex items-center"
-                onClick={() => navigate("/admin")}
+                className="mt-4 px-4 py-2 bg-[#D91604] text-white rounded-md hover:bg-red-700"
+                onClick={() => navigate("/edit-profile")}
               >
-                <FaUserCog className="mr-2" />
-                Admin
+                <FaUserEdit className="inline mr-2" /> Editar Perfil
               </button>
-            )}
-            <button
-              className="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 flex items-center ml-4"
-              onClick={handleSignOut}
-            >
-              <FaTimes className="mr-2" />
-              Salir
-            </button>
+              {isAdmin && (
+                <button
+                  className="mt-4 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 ml-4"
+                  onClick={() => navigate("/admin")}
+                >
+                  <FaUserShield className="inline mr-2" /> Admin Panel
+                </button>
+              )}
+              <button
+                className="mt-4 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 ml-4"
+                onClick={handleLogout}
+              >
+                Cerrar sesión
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="lg:w-2/3 w-full mt-8 lg:mt-0">
+          <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
+            <h3 className="text-xl font-bold mb-4">Courses Purchased</h3>
+            <div className="space-y-4">
+              {/* Example courses purchased */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold">Introduction to React.js</h4>
+                  <div className="flex items-center">
+                    <FaStar className="text-yellow-500" />
+                    <FaStar className="text-yellow-500" />
+                    <FaStar className="text-yellow-500" />
+                    <FaStar className="text-yellow-500" />
+                    <FaStar className="text-gray-300" />
+                    <span className="ml-2 text-sm">4.2</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span>75%</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold">Mastering JavaScript</h4>
+                  <div className="flex items-center">
+                    <FaStar className="text-yellow-500" />
+                    <FaStar className="text-yellow-500" />
+                    <FaStar className="text-yellow-500" />
+                    <FaStar className="text-yellow-500" />
+                    <FaStar className="text-yellow-500" />
+                    <span className="ml-2 text-sm">4.7</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span>90%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h3 className="text-xl font-bold mb-4">Recommended Courses</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Example recommended courses */}
+              <div className="bg-gray-100 p-4 rounded-lg">
+                <h4 className="font-bold">Intro to Python Programming</h4>
+                <div className="flex items-center mb-2">
+                  <FaStar className="text-yellow-500" />
+                  <FaStar className="text-yellow-500" />
+                  <FaStar className="text-yellow-500" />
+                  <FaStar className="text-yellow-500" />
+                  <FaStar className="text-gray-300" />
+                  <span className="ml-2 text-sm">4.2</span>
+                </div>
+                <button className="w-full px-4 py-2 font-bold text-white bg-[#D91604] rounded-md hover:bg-red-700">
+                  Enroll
+                </button>
+              </div>
+              <div className="bg-gray-100 p-4 rounded-lg">
+                <h4 className="font-bold">Mastering CSS Layouts</h4>
+                <div className="flex items-center mb-2">
+                  <FaStar className="text-yellow-500" />
+                  <FaStar className="text-yellow-500" />
+                  <FaStar className="text-yellow-500" />
+                  <FaStar className="text-yellow-500" />
+                  <FaStar className="text-yellow-500" />
+                  <span className="ml-2 text-sm">4.8</span>
+                </div>
+                <button className="w-full px-4 py-2 font-bold text-white bg-[#D91604] rounded-md hover:bg-red-700">
+                  Enroll
+                </button>
+              </div>
+              <div className="bg-gray-100 p-4 rounded-lg">
+                <h4 className="font-bold">Advanced React Patterns</h4>
+                <div className="flex items-center mb-2">
+                  <FaStar className="text-yellow-500" />
+                  <FaStar className="text-yellow-500" />
+                  <FaStar className="text-yellow-500" />
+                  <FaStar className="text-yellow-500" />
+                  <FaStar className="text-yellow-500" />
+                  <span className="ml-2 text-sm">5.0</span>
+                </div>
+                <button className="w-full px-4 py-2 font-bold text-white bg-[#D91604] rounded-md hover:bg-red-700">
+                  Enroll
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

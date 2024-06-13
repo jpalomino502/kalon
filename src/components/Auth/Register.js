@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { auth, googleProvider, db } from '../../config/firebaseConfig'; // Asegúrate de importar db (Firestore)
-import { createUserWithEmailAndPassword, signInWithPopup, updateProfile } from 'firebase/auth'; // Importamos updateProfile
+import { auth, googleProvider, db, storage } from '../../config/firebaseConfig'; // Importamos los servicios de Firebase
+import { createUserWithEmailAndPassword, signInWithPopup, updateProfile } from 'firebase/auth'; // Funciones de autenticación de Firebase
 import { Link, useNavigate } from 'react-router-dom';
 import { FaUserPlus, FaGoogle } from 'react-icons/fa';
-import { doc, setDoc } from 'firebase/firestore'; // Importamos setDoc y doc
+import { doc, setDoc } from 'firebase/firestore'; // Funciones de Firestore
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'; // Funciones de Storage
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -43,13 +44,28 @@ const Register = () => {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
-      // Guardamos la fecha de creación del usuario en Firestore
-      await setDoc(doc(db, 'profiles', user.uid), {
-        email: user.email,
-        name: user.displayName,
-        createdAt: user.metadata.creationTime,
-        photoURL: user.photoURL || ''
-      });
+      // Subir la foto de perfil a Firebase Storage si está disponible
+      if (user.photoURL) {
+        const storageRef = ref(storage, `profiles/${user.uid}/profile.jpg`);
+        await uploadBytes(storageRef, await fetch(user.photoURL).then(res => res.blob()));
+        const photoURL = await getDownloadURL(storageRef);
+        
+        // Guardamos la fotoURL en Firestore
+        await setDoc(doc(db, 'profiles', user.uid), {
+          email: user.email,
+          name: user.displayName,
+          createdAt: user.metadata.creationTime,
+          photoURL: photoURL
+        });
+      } else {
+        // Si el usuario no tiene fotoURL, guardamos los datos sin fotoURL
+        await setDoc(doc(db, 'profiles', user.uid), {
+          email: user.email,
+          name: user.displayName,
+          createdAt: user.metadata.creationTime,
+          photoURL: ''
+        });
+      }
 
       // Navegamos al perfil del usuario
       navigate('/profile');
@@ -89,7 +105,7 @@ const Register = () => {
             required
             className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-black focus:outline-none"
           />
-          <button type="submit" className="flex items-center justify-center w-full px-4 py-2 font-bold text-white bg-black rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black">
+          <button type="submit" className="flex items-center justify-center w-full px-4 py-2 font-bold text-white bg-[#D91604] rounded-md hover:bg-red-700">
             <FaUserPlus className="mr-2" /> Registrarse
           </button>
         </form>

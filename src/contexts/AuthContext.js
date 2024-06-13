@@ -1,7 +1,7 @@
 // src/contexts/AuthContext.js
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth, db } from '../config/firebaseConfig';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth'; // Importar signOut
 import { doc, getDoc } from 'firebase/firestore';
 
 // Crear un contexto de autenticación
@@ -43,9 +43,14 @@ export const AuthProvider = ({ children }) => {
     return unsubscribe;
   }, []);
 
+  const logout = () => {
+    return signOut(auth);
+  };
+
   const value = {
     currentUser,
     userRole,
+    logout, // Añadir la función logout
   };
 
   return (

@@ -2,16 +2,21 @@ my-course-platform/
 ├── node_modules/
 ├── public/
 │   ├── index.html
+│   └── logo.svg
 │   └── robots.txt
 ├── src/
 │   ├── api/
 │   ├── assets/
+│   │   ├── courseImage1.webp
+│   │   ├── headerBackground.jgp
+│   │   ├── logo.png
 │   │   ├── logo.svg
-│   │   ├── README.md
 │   ├── components/
 │   |   ├──Admin/
-│   │   │   ├── BlogForm.js
-│   │   │   └── CourseForm.js
+│   │   │   ├── AdminBlogsList.js
+│   │   │   ├── AdminCoursesList.js
+│   │   │   ├── AdminSidebar.js
+│   │   │   └── AdminTabs.js
 │   │   ├── Auth/
 │   │   │   ├── ForgotPassword.js
 │   │   │   ├── Login.js
@@ -30,7 +35,11 @@ my-course-platform/
 │   │   │   └── Footer.js
 │   │   ├── Header/
 │   │   │   └── Header.js
-│   │   ├── PrivateRoute.js
+│   │   ├── Loading/
+│   │   │   ├── LoadingSkeleton.css
+│   │   │   └── LoadingSkeleton.js
+│   │   ├── Routes/
+│   │   │   └── PrivateRoute.js
 │   ├── config/
 │   │   ├── firebaseConfig.js
 │   ├── Contexts/
@@ -40,6 +49,7 @@ my-course-platform/
 │   │   ├── AdminDashboard.js
 │   │   ├── Blog.js
 │   │   ├── Courses.js
+│   │   ├── EditProfile.js
 │   │   ├── Home.js
 │   │   ├── Profile.js
 │   ├── utils/
