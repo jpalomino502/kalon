@@ -19,7 +19,6 @@ const Login = () => {
       const userDocRef = doc(db, 'profiles', user.uid);
       let userDoc = await getDoc(userDocRef);
 
-      // Si no existe el documento del usuario, crear uno nuevo
       if (!userDoc.exists()) {
         await setDoc(userDocRef, {
           email: user.email,
@@ -27,21 +26,10 @@ const Login = () => {
           createdAt: user.metadata.creationTime,
           photoURL: user.photoURL || ''
         });
-
-        // Volver a obtener el documento después de la creación
-        userDoc = await getDoc(userDocRef);
       }
 
-      // Verificar si el documento se creó correctamente
-      if (userDoc.exists()) {
-        console.log('User logged in and document created/checked:', user.uid);
-        navigate('/profile');
-      } else {
-        console.error('Error: User document not created.');
-        setError('Error: User document not created.');
-      }
+      navigate('/profile');
     } catch (error) {
-      console.error('Error during Google login:', error);
       setError(error.message);
     }
   };
@@ -52,11 +40,7 @@ const Login = () => {
       await signInWithEmailAndPassword(auth, email, password);
       navigate('/profile');
     } catch (error) {
-      if (error.code === 'auth/user-not-found') {
-        navigate('/register'); // Redirigir al registro si no se encuentra el usuario
-      } else {
-        setError(error.message);
-      }
+      setError(error.message);
     }
   };
 
@@ -83,7 +67,7 @@ const Login = () => {
             required
             className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-black focus:outline-none"
           />
-          <button type="submit" className="flex items-center justify-center w-full px-4 py-2 font-bold text-white bg-[#D91604] text-white rounded-md hover:bg-red-700">
+          <button type="submit" className="flex items-center justify-center w-full px-4 py-2 font-bold text-white bg-[#D91604] rounded-md hover:bg-red-700">
             <FaSignInAlt className="mr-2" /> Iniciar Sesión
           </button>
         </form>
