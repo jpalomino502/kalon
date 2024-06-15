@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { db } from "../config/firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { FaStar, FaUserEdit, FaUserShield } from "react-icons/fa";
 import LoadingSkeleton from "../components/Loading/LoadingSkeleton";
 
@@ -20,9 +20,29 @@ const Profile = () => {
       }
 
       try {
-        const userDoc = await getDoc(doc(db, "profiles", currentUser.uid));
+        const userDocRef = doc(db, "profiles", currentUser.uid);
+        let userDoc = await getDoc(userDocRef);
+
+        // Si no existe el documento del usuario, crear uno nuevo
+        if (!userDoc.exists()) {
+          const defaultUserData = {
+            name: currentUser.displayName || "Nuevo Usuario",
+            email: currentUser.email,
+            bio: "",
+            photoURL: currentUser.photoURL || "",
+          };
+          await setDoc(userDocRef, defaultUserData);
+
+          // Volver a obtener el documento después de la creación
+          userDoc = await getDoc(userDocRef);
+        }
+
+        // Verificar si el documento se creó correctamente
         if (userDoc.exists()) {
           setUserData(userDoc.data());
+        } else {
+          console.error("No user data found for uid:", currentUser.uid);
+          setUserData(null);
         }
 
         const roleDoc = await getDoc(doc(db, "roles", currentUser.uid));
@@ -48,7 +68,7 @@ const Profile = () => {
     }
   };
 
-  if (!userData) {
+  if (!currentUser || userData === null) {
     return <LoadingSkeleton />;
   }
 
@@ -59,12 +79,14 @@ const Profile = () => {
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <div className="text-center">
               <div className="w-24 h-24 mx-auto rounded-full bg-gray-200 flex items-center justify-center">
-                {userData.photoURL && (
+                {userData.photoURL ? (
                   <img
                     src={userData.photoURL}
                     alt="Profile"
                     className="w-full h-full rounded-full"
                   />
+                ) : (
+                  <span className="text-gray-500">No Image</span>
                 )}
               </div>
               <h2 className="text-xl font-bold mt-4">{userData.name}</h2>
@@ -106,76 +128,50 @@ const Profile = () => {
                     <FaStar className="text-yellow-500" />
                     <FaStar className="text-yellow-500" />
                     <FaStar className="text-yellow-500" />
-                    <FaStar className="text-gray-300" />
-                    <span className="ml-2 text-sm">4.2</span>
+                    <FaStar className="text-yellow-500" />
                   </div>
                 </div>
-                <div className="text-right">
-                  <span>75%</span>
-                </div>
+                <button className="bg-[#D91604] text-white px-4 py-2 rounded-md hover:bg-red-700">
+                  View Course
+                </button>
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-bold">Mastering JavaScript</h4>
+                  <h4 className="font-bold">Advanced JavaScript</h4>
                   <div className="flex items-center">
                     <FaStar className="text-yellow-500" />
                     <FaStar className="text-yellow-500" />
                     <FaStar className="text-yellow-500" />
                     <FaStar className="text-yellow-500" />
                     <FaStar className="text-yellow-500" />
-                    <span className="ml-2 text-sm">4.7</span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <span>90%</span>
-                </div>
+                <button className="bg-[#D91604] text-white px-4 py-2 rounded-md hover:bg-red-700">
+                  View Course
+                </button>
               </div>
             </div>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h3 className="text-xl font-bold mb-4">Recommended Courses</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Example recommended courses */}
-              <div className="bg-gray-100 p-4 rounded-lg">
-                <h4 className="font-bold">Intro to Python Programming</h4>
-                <div className="flex items-center mb-2">
-                  <FaStar className="text-yellow-500" />
-                  <FaStar className="text-yellow-500" />
-                  <FaStar className="text-yellow-500" />
-                  <FaStar className="text-yellow-500" />
-                  <FaStar className="text-gray-300" />
-                  <span className="ml-2 text-sm">4.2</span>
+            <h3 className="text-xl font-bold mb-4">Blogs</h3>
+            <div className="space-y-4">
+              {/* Example blogs */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold">Understanding Redux</h4>
+                  <p className="text-gray-600">March 25, 2023</p>
                 </div>
-                <button className="w-full px-4 py-2 font-bold text-white bg-[#D91604] rounded-md hover:bg-red-700">
-                  Enroll
+                <button className="bg-[#D91604] text-white px-4 py-2 rounded-md hover:bg-red-700">
+                  Read Blog
                 </button>
               </div>
-              <div className="bg-gray-100 p-4 rounded-lg">
-                <h4 className="font-bold">Mastering CSS Layouts</h4>
-                <div className="flex items-center mb-2">
-                  <FaStar className="text-yellow-500" />
-                  <FaStar className="text-yellow-500" />
-                  <FaStar className="text-yellow-500" />
-                  <FaStar className="text-yellow-500" />
-                  <FaStar className="text-yellow-500" />
-                  <span className="ml-2 text-sm">4.8</span>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold">React Hooks Explained</h4>
+                  <p className="text-gray-600">April 10, 2023</p>
                 </div>
-                <button className="w-full px-4 py-2 font-bold text-white bg-[#D91604] rounded-md hover:bg-red-700">
-                  Enroll
-                </button>
-              </div>
-              <div className="bg-gray-100 p-4 rounded-lg">
-                <h4 className="font-bold">Advanced React Patterns</h4>
-                <div className="flex items-center mb-2">
-                  <FaStar className="text-yellow-500" />
-                  <FaStar className="text-yellow-500" />
-                  <FaStar className="text-yellow-500" />
-                  <FaStar className="text-yellow-500" />
-                  <FaStar className="text-yellow-500" />
-                  <span className="ml-2 text-sm">5.0</span>
-                </div>
-                <button className="w-full px-4 py-2 font-bold text-white bg-[#D91604] rounded-md hover:bg-red-700">
-                  Enroll
+                <button className="bg-[#D91604] text-white px-4 py-2 rounded-md hover:bg-red-700">
+                  Read Blog
                 </button>
               </div>
             </div>

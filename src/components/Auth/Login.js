@@ -1,7 +1,7 @@
-// Login.js
 import React, { useState } from 'react';
-import { auth, googleProvider } from '../../config/firebaseConfig';
+import { auth, googleProvider, db } from '../../config/firebaseConfig';
 import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaSignInAlt, FaGoogle } from 'react-icons/fa';
 
@@ -11,22 +11,52 @@ const Login = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      const userDocRef = doc(db, 'profiles', user.uid);
+      let userDoc = await getDoc(userDocRef);
+
+      // Si no existe el documento del usuario, crear uno nuevo
+      if (!userDoc.exists()) {
+        await setDoc(userDocRef, {
+          email: user.email,
+          name: user.displayName,
+          createdAt: user.metadata.creationTime,
+          photoURL: user.photoURL || ''
+        });
+
+        // Volver a obtener el documento después de la creación
+        userDoc = await getDoc(userDocRef);
+      }
+
+      // Verificar si el documento se creó correctamente
+      if (userDoc.exists()) {
+        console.log('User logged in and document created/checked:', user.uid);
+        navigate('/profile');
+      } else {
+        console.error('Error: User document not created.');
+        setError('Error: User document not created.');
+      }
+    } catch (error) {
+      console.error('Error during Google login:', error);
+      setError(error.message);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
       navigate('/profile');
     } catch (error) {
-      setError(error.message);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      await signInWithPopup(auth, googleProvider);
-      navigate('/profile');
-    } catch (error) {
-      setError(error.message);
+      if (error.code === 'auth/user-not-found') {
+        navigate('/register'); // Redirigir al registro si no se encuentra el usuario
+      } else {
+        setError(error.message);
+      }
     }
   };
 
