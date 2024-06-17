@@ -2,7 +2,7 @@ import React, { lazy, Suspense } from "react";
 
 const Hero = lazy(() => import("../components/Home/Hero"));
 const CourseSection = lazy(() => import("../components/Home/CourseSection"));
-const CategoriesSection = lazy(() => import("../components/Home/CategoriesSection"));
+// const CategoriesSection = lazy(() => import("../components/Home/CategoriesSection"));
 const TestimonialsSection = lazy(() => import("../components/Home/TestimonialsSection"));
 
 const Home = () => {
@@ -14,7 +14,7 @@ const Home = () => {
 
       <Suspense fallback={<div>Loading...</div>}>
         <CourseSection />
-        <CategoriesSection />
+        {/* <CategoriesSection /> */}
         <TestimonialsSection />
       </Suspense>
     </div>
