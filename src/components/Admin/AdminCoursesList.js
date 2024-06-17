@@ -4,12 +4,14 @@ import { collection, getDocs, addDoc, updateDoc, doc, deleteDoc, getDoc } from '
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
+import imageCompression from 'browser-image-compression';
 import 'react-toastify/dist/ReactToastify.css';
 
 const AdminCoursesList = () => {
   const [courses, setCourses] = useState([]);
-  const [formState, setFormState] = useState({ title: '', description: '', videoURL: '', category: '' });
+  const [formState, setFormState] = useState({ title: '', description: '', videoURL: '', category: '', image: '', price: '', duration: '' });
   const [file, setFile] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const navigate = useNavigate();
   const { courseId } = useParams();
 
@@ -45,9 +47,14 @@ const AdminCoursesList = () => {
     setFile(e.target.files[0]);
   };
 
+  const handleImageChange = (e) => {
+    setImageFile(e.target.files[0]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     let videoURL = formState.videoURL;
+    let imageURL = formState.image;
 
     if (file) {
       const storageRef = ref(storage, `courses/${file.name}`);
@@ -55,7 +62,19 @@ const AdminCoursesList = () => {
       videoURL = await getDownloadURL(storageRef);
     }
 
-    const courseData = { ...formState, videoURL };
+    if (imageFile) {
+      // Compresión de la imagen antes de subirla
+      const compressedFile = await imageCompression(imageFile, {
+        maxSizeMB: 0.1, // Máximo tamaño en MB (100KB)
+        maxWidthOrHeight: 800, // Ajustar tamaño si es necesario
+        useWebWorker: true,
+      });
+      const imageRef = ref(storage, `courses/images/${imageFile.name}`);
+      await uploadBytes(imageRef, compressedFile);
+      imageURL = await getDownloadURL(imageRef);
+    }
+
+    const courseData = { ...formState, videoURL, image: imageURL };
 
     try {
       if (courseId) {
@@ -63,12 +82,10 @@ const AdminCoursesList = () => {
         await updateDoc(courseDoc, courseData);
         toast.success('Curso actualizado correctamente', { position: 'bottom-right' });
       } else {
-        await addDoc(collection(db, 'courses'), courseData);
+        const docRef = await addDoc(collection(db, 'courses'), courseData);
         toast.success('Curso creado correctamente', { position: 'bottom-right' });
+        navigate(`/courses/${docRef.id}`);
       }
-      setTimeout(() => {
-        navigate('/admin/courses');
-      }, 5000); // Redireccionar después de 5 segundos
     } catch (error) {
       console.error("Error adding/updating document: ", error);
       toast.error('Hubo un error al procesar la acción', { position: 'bottom-right' });
@@ -88,16 +105,16 @@ const AdminCoursesList = () => {
   };
 
   return (
-    <div>
+    <div className="container mx-auto p-4">
       <ToastContainer />
-      <h1 className="text-3xl font-bold mb-6">Listado de Cursos</h1>
-      <form onSubmit={handleSubmit} className="mb-6">
+      <h1 className="text-4xl font-bold text-center mb-6">Listado de Cursos</h1>
+      <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md mb-6">
         <div className="mb-4">
           <label className="block text-gray-700 mb-2">Título</label>
           <input
             type="text"
             name="title"
-            className="w-full p-2 border border-gray-300 rounded"
+            className="w-full p-3 border border-gray-300 rounded-lg"
             placeholder="Ingrese el título del curso"
             value={formState.title}
             onChange={handleChange}
@@ -108,7 +125,7 @@ const AdminCoursesList = () => {
           <label className="block text-gray-700 mb-2">Descripción</label>
           <textarea
             name="description"
-            className="w-full p-2 border border-gray-300 rounded"
+            className="w-full p-3 border border-gray-300 rounded-lg"
             placeholder="Ingrese la descripción del curso"
             value={formState.description}
             onChange={handleChange}
@@ -119,36 +136,68 @@ const AdminCoursesList = () => {
           <label className="block text-gray-700 mb-2">Video</label>
           <input
             type="file"
-            className="w-full p-2 border border-gray-300 rounded"
+            className="w-full p-3 border border-gray-300 rounded-lg"
             onChange={handleFileChange}
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700 mb-2">Imagen de Fondo</label>
+          <input
+            type="file"
+            className="w-full p-3 border border-gray-300 rounded-lg"
+            onChange={handleImageChange}
           />
         </div>
         <div className="mb-4">
           <label className="block text-gray-700 mb-2">Categoría</label>
           <select
             name="category"
-            className="w-full p-2 border border-gray-300 rounded"
+            className="w-full p-3 border border-gray-300 rounded-lg"
             value={formState.category}
             onChange={handleChange}
             required
           >
             <option value="">Seleccione una categoría</option>
-            <option value="Technology">Tecnología</option>
-            <option value="Business">Negocios</option>
-            <option value="Lifestyle">Estilo de vida</option>
+            <option value="Teoría Musical">Teoría Musical</option>
+            <option value="Instrumentos">Instrumentos</option>
+            <option value="Producción Musical">Producción Musical</option>
           </select>
         </div>
-        <button type="submit" className="bg-red-600 text-white px-4 py-2 rounded">
+        <div className="mb-4">
+          <label className="block text-gray-700 mb-2">Precio</label>
+          <input
+            type="number"
+            name="price"
+            className="w-full p-3 border border-gray-300 rounded-lg"
+            placeholder="Ingrese el precio del curso"
+            value={formState.price}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700 mb-2">Duración (horas)</label>
+          <input
+            type="number"
+            name="duration"
+            className="w-full p-3 border border-gray-300 rounded-lg"
+            placeholder="Ingrese la duración del curso en horas"
+            value={formState.duration}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <button type="submit" className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition duration-300">
           {courseId ? 'Actualizar' : 'Crear'}
         </button>
       </form>
       <ul>
         {courses.map(course => (
-          <li key={course.id} className="mb-4">
-            <Link to={`/admin/course/edit/${course.id}`} className="text-red-600 hover:underline">
+          <li key={course.id} className="mb-4 p-4 bg-gray-100 rounded-lg shadow-md flex justify-between items-center">
+            <Link to={`/admin/course/edit/${course.id}`} className="text-blue-600 hover:underline text-xl">
               {course.title}
             </Link>
-            <button onClick={() => handleDelete(course.id)} className="ml-4 text-red-600 hover:underline">
+            <button onClick={() => handleDelete(course.id)} className="text-red-600 hover:underline text-lg">
               Borrar
             </button>
           </li>

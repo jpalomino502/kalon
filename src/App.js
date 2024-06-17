@@ -4,7 +4,6 @@ import {
   Routes,
   Route,
   Navigate,
-  Outlet,
 } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext";
 import Header from "./components/Header/Header";
@@ -16,7 +15,7 @@ const Home = React.lazy(() => import("./pages/Home"));
 const Courses = React.lazy(() => import("./pages/Courses"));
 const Blog = React.lazy(() => import("./pages/Blog"));
 const Profile = React.lazy(() => import("./pages/Profile"));
-const EditProfile = React.lazy(() => import("./pages/EditProfile"));
+const EditProfile = React.lazy(() => import("./components/Profile/EditProfile"));
 const BlogPost = React.lazy(() => import("./components/Blog/BlogPost"));
 const Login = React.lazy(() => import("./components/Auth/Login"));
 const Register = React.lazy(() => import("./components/Auth/Register"));
@@ -33,6 +32,7 @@ const AdminSidebar = React.lazy(() =>
   import("./components/Admin/AdminSidebar")
 );
 const AdminTabs = React.lazy(() => import("./components/Admin/AdminTabs"));
+const CourseDetail = React.lazy(() => import("./components/Courses/CourseDetail"));
 
 const AdminEmpty = () => <div></div>;
 
@@ -46,8 +46,13 @@ const AdminDashboardLayout = () => {
         <Suspense fallback={<LoadingSkeleton />}>
           <AdminTabs />
         </Suspense>
-        <Outlet />{" "}
-        {/* Utilizando 'Outlet' para mostrar el contenido de las rutas hijas */}
+        <Routes>
+          <Route index element={<AdminEmpty />} />
+          <Route path="blogs" element={<AdminBlogsList />} />
+          <Route path="courses" element={<AdminCoursesList />} />
+          <Route path="blog/edit/:postId" element={<AdminBlogsList />} />
+          <Route path="course/edit/:courseId" element={<AdminCoursesList />} />
+        </Routes>
       </div>
     </div>
   );
@@ -65,6 +70,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/courses" element={<Courses />} />
+              <Route path="/courses/:courseId" element={<CourseDetail />} />
               <Route path="/blog" element={<Blog />} />
               <Route
                 path="/profile"
@@ -94,18 +100,12 @@ function App() {
                 }
               />
               <Route element={<PrivateRoute role="admin" />}>
-                <Route path="/admin" element={<AdminDashboardLayout />}>
+                <Route path="admin" element={<AdminDashboardLayout />}>
                   <Route index element={<AdminEmpty />} />
                   <Route path="blogs" element={<AdminBlogsList />} />
                   <Route path="courses" element={<AdminCoursesList />} />
-                  <Route
-                    path="blog/edit/:postId"
-                    element={<AdminBlogsList />}
-                  />
-                  <Route
-                    path="course/edit/:courseId"
-                    element={<AdminCoursesList />}
-                  />
+                  <Route path="blog/edit/:postId" element={<AdminBlogsList />} />
+                  <Route path="course/edit/:courseId" element={<AdminCoursesList />} />
                 </Route>
               </Route>
             </Routes>

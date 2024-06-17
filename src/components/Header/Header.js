@@ -33,13 +33,13 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white text-black shadow-md">
-      <div className="container mx-auto flex justify-between items-center py-2">
+    <header className="bg-cover bg-center py-2 md:py-3 px-4 md:px-6">
+      <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="flex items-center">
           <img
             src={logo}
             alt="Kalon Musical Academy Logo"
-            className="h-16 ml-3 mr-3 lg:h-14"
+            className="h-12 md:h-16 lg:h-15"
           />
         </Link>
         <nav className="hidden md:flex space-x-6 items-center text-sm lg:text-base">
@@ -85,7 +85,7 @@ const Header = () => {
             {open ? (
               <XIcon className="h-8 w-8" />
             ) : (
-              <MenuIcon className="h-8 w-8" style={{ strokeWidth: 2.5 }} />
+              <MenuIcon className="h-8 w-8" style={{ fontWeight: 'normal' }} />
             )}
           </button>
           <AnimatePresence>
@@ -100,7 +100,7 @@ const Header = () => {
                   onClick={() => setOpen(false)}
                 />
                 <motion.div
-                  className="fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-50"
+                  className="fixed top-0 right-0 h-full w-64 bg-white border-l border-black z-50"
                   initial={{ x: "100%" }}
                   animate={{ x: 0 }}
                   exit={{ x: "100%" }}
