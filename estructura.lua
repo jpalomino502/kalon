@@ -2,15 +2,17 @@ my-course-platform/
 ├── node_modules/
 ├── public/
 │   ├── index.html
+│   └── logo.png
 │   └── logo.svg
 │   └── robots.txt
 ├── src/
 │   ├── api/
 │   ├── assets/
-│   │   ├── courseImage1.webp
 │   │   ├── headerBackground.jgp
+│   │   ├── headerBackground1.jgp
+│   │   ├── headerBackground2.jgp
+│   │   ├── headerBackgroundVideo.mp4
 │   │   ├── logo.png
-│   │   ├── logo.svg
 │   ├── components/
 │   |   ├──Admin/
 │   │   │   ├── AdminBlogsList.js
@@ -22,22 +24,28 @@ my-course-platform/
 │   │   │   ├── Login.js
 │   │   │   └── Register.js
 │   │   ├── Blog/
-│   │   │   ├── BlogList.js
-│   │   │   └── BlogPost.js
+│   │   │   └── BlogDetail.js
 │   │   ├── Cart/
 │   │   │   ├── Cart.js
 │   │   │   └── Cartitem.js
 │   │   ├── Checkout/
 │   │   │   └── Checkout.js
-│   │   ├── Course/
-│   │   │   └── Course.js
+│   │   ├── Courses/
+│   │   │   └── CourseDetail.js
 │   │   ├── Footer/
 │   │   │   └── Footer.js
 │   │   ├── Header/
 │   │   │   └── Header.js
+│   │   ├── Home/
+│   │   │   └── CategoriesSection.js
+│   │   │   └── CourseSection.js
+│   │   │   └── Hero.js
+│   │   │   └── TestimonialsSection.js
 │   │   ├── Loading/
 │   │   │   ├── LoadingSkeleton.css
 │   │   │   └── LoadingSkeleton.js
+│   │   ├── Profile/
+│   │   │   └── EditProfile.js
 │   │   ├── Routes/
 │   │   │   └── PrivateRoute.js
 │   ├── config/
@@ -47,9 +55,8 @@ my-course-platform/
 │   ├── hooks/
 │   ├── pages/
 │   │   ├── AdminDashboard.js
-│   │   ├── Blog.js
+│   │   ├── Blogs.js
 │   │   ├── Courses.js
-│   │   ├── EditProfile.js
 │   │   ├── Home.js
 │   │   ├── Profile.js
 │   ├── utils/

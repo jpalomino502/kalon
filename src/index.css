@@ -9,6 +9,7 @@ body {
 }
 
 .nav-link:hover {
+    transition: background-color 0.5s ease !important;
     color: black;
     font-weight: bold;
 }

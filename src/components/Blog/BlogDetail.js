@@ -4,32 +4,32 @@ import { db } from '../../config/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 import LoadingSkeleton from '../Loading/LoadingSkeleton';
 
-const CourseDetail = ({ onAddToCart }) => {
-  const { courseId } = useParams();
-  const [course, setCourse] = useState(null);
+const BlogDetail = () => {
+  const { blogId } = useParams();
+  const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [videoError, setVideoError] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
 
   useEffect(() => {
-    const fetchCourse = async () => {
+    const fetchBlog = async () => {
       try {
-        const courseDoc = doc(db, 'courses', courseId);
-        const courseSnap = await getDoc(courseDoc);
-        if (courseSnap.exists()) {
-          setCourse(courseSnap.data());
+        const blogDoc = doc(db, 'blogs', blogId);
+        const blogSnap = await getDoc(blogDoc);
+        if (blogSnap.exists()) {
+          setBlog(blogSnap.data());
         } else {
           console.log('No such document!');
         }
       } catch (error) {
-        console.error('Error fetching course:', error);
+        console.error('Error fetching blog:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCourse();
-  }, [courseId]);
+    fetchBlog();
+  }, [blogId]);
 
   const handleVideoError = () => {
     setVideoError(true);
@@ -39,8 +39,8 @@ const CourseDetail = ({ onAddToCart }) => {
     return <LoadingSkeleton />;
   }
 
-  if (!course) {
-    return <div>El curso no existe o ha sido eliminado.</div>;
+  if (!blog) {
+    return <div>El blog no existe o ha sido eliminado.</div>;
   }
 
   return (
@@ -48,14 +48,14 @@ const CourseDetail = ({ onAddToCart }) => {
       <div className="bg-white rounded-lg shadow-md p-6 flex">
         <div className="w-1/2 relative">
           <div
-            className="relative h-64 bg-cover bg-center mb-4"
-            style={{ backgroundImage: `url(${course.image})` }}
+            className="relative h-64 bg-cover bg-center mb-4 rounded-lg cursor-pointer"
+            style={{ backgroundImage: `url(${blog.image})` }}
             onClick={() => setShowVideo(!showVideo)}
           >
             {!showVideo && (
-              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center cursor-pointer">
+              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                 <svg
-                  className="w-16 h-16 text-white"
+                  className="w-16 h-16 text-white cursor-pointer"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -70,14 +70,14 @@ const CourseDetail = ({ onAddToCart }) => {
                 </svg>
               </div>
             )}
-            {showVideo && course.videoURL && (
+            {showVideo && blog.videoURL && (
               <video
                 controls
-                className="absolute inset-0 w-full h-full"
+                className="absolute inset-0 w-full h-full rounded-lg"
                 onCanPlay={() => setVideoError(false)}
                 onError={handleVideoError}
               >
-                <source src={course.videoURL} type="video/mp4" />
+                <source src={blog.videoURL} type="video/mp4" />
                 Tu navegador no soporta el elemento de video.
               </video>
             )}
@@ -87,33 +87,38 @@ const CourseDetail = ({ onAddToCart }) => {
               Error cargando el video. Por favor, intenta nuevamente más tarde.
             </div>
           )}
-          <div className="mt-4">
-            <button className="bg-red-600 text-white py-2 px-4 mr-2" onClick={() => onAddToCart(course)}>
-              Comprar
+          <div className="flex justify-between">
+            <button className="bg-black text-white py-2 px-4 rounded-lg mr-2">
+              Inscribirse Ahora
+            </button>
+            <button className="bg-gray-200 py-2 px-4 rounded-lg">
+              Acceder al Blog
             </button>
           </div>
         </div>
         <div className="w-1/2 pl-8">
-          <h1 className="text-3xl font-bold mb-4">{course.title}</h1>
-          <p className="text-gray-700 mb-4">{course.description}</p>
-          <p className="text-gray-800 font-semibold mb-2">
-            Precio: COP$ {course.price},00
-          </p>
-          <p className="text-gray-600 mb-4">Duración: {course.duration} horas</p>
-          {course.topics && course.topics.length > 0 && (
-            <div className="mt-4">
-              <h2 className="text-2xl font-bold">Temas Cubiertos</h2>
+          <h1 className="text-3xl font-bold mb-4">{blog.title}</h1>
+          <p className="text-gray-700 mb-4">{blog.description}</p>
+          <div className="flex items-center mb-4">
+            <p className="text-gray-800 font-semibold mr-2">
+              Precio: COP$ {blog.price},00
+            </p>
+            <p className="text-gray-600">Duración: {blog.duration} horas</p>
+          </div>
+          {blog.topics && blog.topics.length > 0 && (
+            <div className="mb-4">
+              <h2 className="text-2xl font-bold mb-2">Temas Cubiertos</h2>
               <ul className="list-disc list-inside">
-                {course.topics.map((topic, index) => (
-                  <li key={index}>{topic}</li>
+                {blog.topics.map((topic, index) => (
+                  <li key={index} className="text-gray-700">{topic}</li>
                 ))}
               </ul>
             </div>
           )}
-          {course.instructor && (
-            <div className="mt-4">
-              <h2 className="text-2xl font-bold">Sobre el Instructor</h2>
-              <p>{course.instructor}</p>
+          {blog.instructor && (
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Sobre el Instructor</h2>
+              <p className="text-gray-700">{blog.instructor}</p>
             </div>
           )}
         </div>
@@ -122,4 +127,4 @@ const CourseDetail = ({ onAddToCart }) => {
   );
 };
 
-export default CourseDetail;
+export default BlogDetail;
