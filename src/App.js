@@ -5,9 +5,9 @@ import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import PrivateRoute from "./components/Routes/PrivateRoute";
 import LoadingSkeleton from "./components/Loading/LoadingSkeleton";
-import CheckoutForm from "./components/CheckoutForm/CheckoutForm"; // Componente actualizado para PayPal
+import CheckoutForm from "./components/CheckoutForm/CheckoutForm"; 
+import HeroCarousel from "./components/Home/Hero"; // Importar el componente Hero
 
-// Importación de las páginas y componentes
 const Home = React.lazy(() => import("./pages/Home"));
 const Courses = React.lazy(() => import("./pages/Courses"));
 const Blog = React.lazy(() => import("./pages/Blogs"));
@@ -22,6 +22,7 @@ const AdminSidebar = React.lazy(() => import("./components/Admin/AdminSidebar"))
 const AdminTabs = React.lazy(() => import("./components/Admin/AdminTabs"));
 const CourseDetail = React.lazy(() => import("./components/Courses/CourseDetail"));
 const BlogDetail = React.lazy(() => import("./components/Blog/BlogDetail"));
+const AboutUs = React.lazy(() => import("./pages/AboutUs"));
 
 const AdminEmpty = () => <div></div>;
 
@@ -69,8 +70,6 @@ function App() {
     setCheckoutOpen(false);
     console.log("Pago exitoso:", payment);
     alert("Pago exitoso");
-
-    // Redirigir al usuario a la página de inicio después de un pago exitoso
     return <Navigate to="/" />;
   };
 
@@ -85,33 +84,12 @@ function App() {
               <Route path="/courses" element={<Courses onAddToCart={handleAddToCart} />} />
               <Route path="/courses/:courseId" element={<CourseDetail onAddToCart={handleAddToCart} />} />
               <Route path="/blog" element={<Blog />} />
-              <Route path="/blogs/:blogId" element={<BlogDetail />} /> {/* Ruta para el detalle del blog */}
-              <Route
-                path="/profile"
-                element={currentUser ? <Profile /> : <Navigate to="/login" />}
-              />
-              <Route
-                path="/edit-profile"
-                element={
-                  currentUser ? <EditProfile /> : <Navigate to="/login" />
-                }
-              />
-              <Route
-                path="/login"
-                element={!currentUser ? <Login /> : <Navigate to="/profile" />}
-              />
-              <Route
-                path="/register"
-                element={
-                  !currentUser ? <Register /> : <Navigate to="/profile" />
-                }
-              />
-              <Route
-                path="/forgot-password"
-                element={
-                  !currentUser ? <ForgotPassword /> : <Navigate to="/profile" />
-                }
-              />
+              <Route path="/blogs/:blogId" element={<BlogDetail />} /> 
+              <Route path="/profile" element={currentUser ? <Profile /> : <Navigate to="/login" />} />
+              <Route path="/edit-profile" element={currentUser ? <EditProfile /> : <Navigate to="/login" />} />
+              <Route path="/login" element={!currentUser ? <Login /> : <Navigate to="/profile" />} />
+              <Route path="/register" element={!currentUser ? <Register /> : <Navigate to="/profile" />} />
+              <Route path="/forgot-password" element={!currentUser ? <ForgotPassword /> : <Navigate to="/profile" />} />
               <Route element={<PrivateRoute role="admin" />}>
                 <Route path="admin" element={<AdminDashboardLayout />}>
                   <Route index element={<AdminEmpty />} />
@@ -121,6 +99,8 @@ function App() {
                   <Route path="course/edit/:courseId" element={<AdminCoursesList />} />
                 </Route>
               </Route>
+              <Route path="/about-us" element={<AboutUs />} />
+              <Route path="/hero-carousel" element={<HeroCarousel />} /> {/* Nueva ruta para el carrusel */}
             </Routes>
           </Suspense>
         </main>
@@ -129,7 +109,6 @@ function App() {
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
             <div className="bg-white p-6 rounded shadow-lg">
               <h2 className="text-xl mb-4">Procesar Pago con PayPal</h2>
-              {/* Aquí se utiliza el formulario de pago de PayPal */}
               <CheckoutForm onSuccessfulCheckout={handleSuccessfulCheckout} />
               <button onClick={() => setCheckoutOpen(false)} className="mt-4 w-full bg-red-500 text-white py-2 rounded">
                 Cancelar

@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 const CourseSection = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [imagesLoaded, setImagesLoaded] = useState(false); // Estado para controlar la carga de imágenes
+  const [imagesLoaded, setImagesLoaded] = useState(false);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -16,7 +16,7 @@ const CourseSection = () => {
         const courseList = courseSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-          imageLoaded: false, // Agregar estado para cada curso para controlar la carga de la imagen
+          imageLoaded: false,
         }));
         setCourses(courseList);
       } catch (error) {
@@ -30,16 +30,14 @@ const CourseSection = () => {
   }, []);
 
   useEffect(() => {
-    // Verificar si todas las imágenes han cargado
     const allImagesLoaded = courses.every((course) => course.imageLoaded);
 
     if (allImagesLoaded) {
-      setImagesLoaded(true); // Actualizar estado cuando todas las imágenes estén cargadas
+      setImagesLoaded(true);
     }
   }, [courses]);
 
   const handleImageLoaded = (index) => {
-    // Marcar la imagen cargada en el estado del curso
     setCourses((prevCourses) =>
       prevCourses.map((course, idx) =>
         idx === index ? { ...course, imageLoaded: true } : course
@@ -107,7 +105,7 @@ const CourseSection = () => {
             whileTap={{ scale: 0.95 }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
+            transition={{ duration: 0.2, delay: index * 0.1 }} // Ajustar la duración de la animación aquí
           >
             <div
               className="h-40 bg-cover bg-center"
@@ -128,7 +126,7 @@ const CourseSection = () => {
                   {course.originalPrice}
                 </span>
               </div>
-              <button className="block w-full px-4 py-2 font-bold text-white bg-red-600 text-white hover:bg-red-700 transition duration-300">
+              <button className="block w-full px-4 py-2 font-bold text-white bg-red-600 text-white hover:bg-red-700 transition duration-100">
                 Comprar Ahora
               </button>
             </div>
@@ -143,7 +141,7 @@ const CourseSection = () => {
       <h1 className="text-3xl font-bold text-center mb-6">
         Especializados para enseñarte
       </h1>
-      {(loading || !imagesLoaded) ? renderLoadingSkeletons() : renderCourses()}
+      {loading || !imagesLoaded ? renderLoadingSkeletons() : renderCourses()}
     </section>
   );
 };

@@ -15,7 +15,6 @@ body {
 }
 
 .active {
-    color: black;
     font-weight: bold;
 }
 .bg-profile-background {

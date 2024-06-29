@@ -27,9 +27,8 @@ my-course-platform/
 │   │   │   └── BlogDetail.js
 │   │   ├── Cart/
 │   │   │   ├── Cart.js
-│   │   │   └── Cartitem.js
-│   │   ├── Checkout/
-│   │   │   └── Checkout.js
+│   │   ├── CheckoutForm/
+│   │   │   └── CheckoutForm.js
 │   │   ├── Courses/
 │   │   │   └── CourseDetail.js
 │   │   ├── Footer/

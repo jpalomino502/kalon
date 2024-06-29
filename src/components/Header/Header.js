@@ -17,6 +17,7 @@ import Cart from "../Cart/Cart"; // Importa el componente del carrito
 const Header = ({ cartItems, onClearCart, onCheckout }) => {
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false); // Estado para el carrito móvil
   const location = useLocation();
   const navigate = useNavigate();
   const cartRef = useRef(null);
@@ -36,7 +37,7 @@ const Header = ({ cartItems, onClearCart, onCheckout }) => {
 
   const handleClickOutsideCart = (event) => {
     if (cartRef.current && !cartRef.current.contains(event.target)) {
-      setOpen(false);
+      setCartOpen(false); // Cierra el carrito cuando se hace clic fuera
     }
   };
 
@@ -58,7 +59,7 @@ const Header = ({ cartItems, onClearCart, onCheckout }) => {
             className="h-12 md:h-16 lg:h-15"
           />
         </Link>
-        <nav className="hidden md:flex space-x-6 items-center text-sm lg:text-base">
+        <nav className="hidden md:flex space-x-6 items-center text-sm lg:text-base text-black">
           <NavLink to="/" text="Inicio" isActive={location.pathname === "/"} />
           <NavLink
             to="/courses"
@@ -72,10 +73,10 @@ const Header = ({ cartItems, onClearCart, onCheckout }) => {
           />
           <div className="relative">
             <button
-              onClick={() => setOpen(!open)}
+              onClick={() => setCartOpen(!cartOpen)}
               className="flex items-center hover:text-gray-800"
             >
-              <ShoppingCartIcon className="h-6 w-6 mr-1 text-gray-500" />
+              <ShoppingCartIcon className="h-6 w-6 mr-1 text-black" />
               {cartItems.length > 0 && (
                 <span className="bg-red-600 text-white rounded-full px-2 py-1 text-xs">
                   {cartItems.length}
@@ -83,7 +84,7 @@ const Header = ({ cartItems, onClearCart, onCheckout }) => {
               )}
             </button>
             <AnimatePresence>
-              {open && (
+              {cartOpen && (
                 <motion.div
                   ref={cartRef}
                   className="absolute top-full right-0 mt-2 w-80 bg-white shadow-lg p-4 rounded"
@@ -116,15 +117,26 @@ const Header = ({ cartItems, onClearCart, onCheckout }) => {
           )}
         </nav>
         {/* Menú para móviles */}
-        <div className="md:hidden relative z-50">
+        <div className="md:hidden relative z-50 flex items-center gap-4">
           <button
-            className="focus:outline-none mr-4"
+            onClick={() => setCartOpen(!cartOpen)}
+            className="flex items-center hover:text-gray-800"
+          >
+            <ShoppingCartIcon className="h-6 w-6 text-black" />
+            {cartItems.length > 0 && (
+              <span className="bg-red-600 text-white rounded-full px-2 py-1 text-xs">
+                {cartItems.length}
+              </span>
+            )}
+          </button>
+          <button
+            className="focus:outline-none"
             onClick={() => setOpen(!open)}
           >
             {open ? (
-              <XIcon className="h-8 w-8" />
+              <XIcon className="h-8 w-8 text-black" />
             ) : (
-              <MenuIcon className="h-8 w-8" />
+              <MenuIcon className="h-8 w-8 text-black" />
             )}
           </button>
           <AnimatePresence>
@@ -145,7 +157,7 @@ const Header = ({ cartItems, onClearCart, onCheckout }) => {
                   exit={{ x: "100%" }}
                   transition={{ duration: 0.3 }}
                 >
-                  <div className="p-4">
+                  <div className="p-4 text-black">
                     <MenuItem
                       path="/"
                       text="Inicio"
@@ -180,6 +192,24 @@ const Header = ({ cartItems, onClearCart, onCheckout }) => {
             )}
           </AnimatePresence>
         </div>
+        <AnimatePresence>
+          {cartOpen && (
+            <motion.div
+              ref={cartRef}
+              className="fixed top-16 right-0 mt-2 w-80 bg-white shadow-lg p-4 rounded z-50"
+              initial={{ opacity: 0, scale: 0.8, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Cart
+                cartItems={cartItems}
+                onClearCart={onClearCart}
+                onCheckout={onCheckout}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </header>
   );
@@ -194,7 +224,8 @@ const NavLink = ({ to, text, isActive }) => (
 const ButtonLink = ({ to, text, isActive }) => (
   <Link
     to={to}
-    className={`inline-block py-2 px-4 bg-white text-black border border-black hover:bg-gray-200 transition duration-300 ${isActive ? "active" : ""}`}
+    className={`inline-block py-2 px-4 text-white font-bold hover:bg-gray-200 transition duration-300 ${isActive ? "active" : ""}`}
+    style={{ backgroundColor: "#D91604" }}
   >
     {text}
   </Link>
@@ -202,7 +233,7 @@ const ButtonLink = ({ to, text, isActive }) => (
 
 const MenuItem = ({ path, text, Icon, onClick, location }) => (
   <motion.button
-    className={`flex items-center w-full px-4 py-4 text-lg nav-link cursor-pointer text-left focus:outline-none transition-colors duration-200 hover:bg-gray-100 ${
+    className={`flex items-center w-full px-4 py-4 text-lg nav-link cursor-pointer text-left text-black focus:outline-none transition-colors duration-200 hover:bg-gray-100 ${
       location.pathname === path ? "active" : ""
     }`}
     onClick={() => onClick(path)}
@@ -212,7 +243,7 @@ const MenuItem = ({ path, text, Icon, onClick, location }) => (
     whileHover={{ scale: 1.05 }}
     whileTap={{ scale: 0.95 }}
   >
-    <Icon className="h-6 w-6 mr-3 text-gray-500" />
+    <Icon className="h-6 w-6 mr-3 text-black" />
     {text}
   </motion.button>
 );
