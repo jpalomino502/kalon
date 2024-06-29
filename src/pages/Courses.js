@@ -188,7 +188,7 @@ const Courses = () => {
                 <h2 className="text-xl font-bold mb-2">{course.title}</h2>
                 <p className="text-gray-700 mb-4">{course.description}</p>
                 <p className="text-gray-800 font-semibold mb-2">
-                  COP$ {course.price},00
+                  COP$ {course.price}
                 </p>
                 <p className="text-gray-600 mb-4">{course.duration} horas</p>
                 <button className="block bg-red-600 text-white text-center py-2 w-full rounded-lg">

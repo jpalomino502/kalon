@@ -50,7 +50,7 @@ const Header = ({ cartItems, onClearCart, onCheckout }) => {
   }, []);
 
   return (
-    <header className="bg-cover bg-center py-2 md:py-3 px-4 md:px-6 shadow md:shadow-lg relative">
+    <header className="bg-cover bg-center py-2 px-4 md:px-6 shadow md:shadow-lg relative">
       <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="flex items-center">
           <img
@@ -83,24 +83,6 @@ const Header = ({ cartItems, onClearCart, onCheckout }) => {
                 </span>
               )}
             </button>
-            <AnimatePresence>
-              {cartOpen && (
-                <motion.div
-                  ref={cartRef}
-                  className="absolute top-full right-0 mt-2 w-80 bg-white shadow-lg p-4 rounded"
-                  initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.8, y: 10 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Cart
-                    cartItems={cartItems}
-                    onClearCart={onClearCart}
-                    onCheckout={onCheckout}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
           {user ? (
             <ButtonLink

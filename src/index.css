@@ -8,15 +8,34 @@ body {
   font-family: 'Quicksand', sans-serif;
 }
 
-.nav-link:hover {
-    transition: background-color 0.5s ease !important;
-    color: black;
-    font-weight: bold;
+header {
+  position: relative;
+  background-color: #ffffff;
+  padding: 12px 24px;
 }
 
-.active {
-    font-weight: bold;
+.nav-link {
+  position: relative;
+  text-decoration: none;
+  color: black;
+  transition: color 0.3s;
+  padding-bottom: 6px;
 }
+
+.nav-link.active {
+  font-weight: bold; 
+}
+
+.nav-link.active::after {
+  content: ''; 
+  position: absolute; 
+  bottom: 0;
+  left: 0;
+  width: 100%; 
+  height: 2px;
+  background-color: black;
+}
+
 .bg-profile-background {
   border-radius: 0;
 }
