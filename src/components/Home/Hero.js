@@ -1,8 +1,23 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import headerBackgroundVideo from "../../assets/headerBackgroundVideo1.mp4";
 
 const Hero = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const videoElement = document.getElementById("hero-video");
+    if (videoElement) {
+      videoElement.addEventListener("loadeddata", () => {
+        videoElement.play();
+      });
+      return () => {
+        videoElement.removeEventListener("loadeddata", () => {
+          videoElement.play();
+        });
+      };
+    }
+  }, []);
 
   const handleStartNowClick = () => {
     navigate("/courses");
@@ -13,32 +28,40 @@ const Hero = () => {
   };
 
   return (
-    <div className="hero bg-gradient-to-br from-blue-600 via-red-600 to-yellow-300 relative h-[500px] md:h-[600px] lg:h-[700px] flex items-center justify-center overflow-hidden px-8">
-      <div className="absolute inset-0 bg-black opacity-50"></div>
-      <div className="relative z-10 text-white max-w-3xl mx-auto text-center">
-        <h1 className="text-3xl md:text-5xl font-bold mb-4">
+    <div className="hero bg-black relative h-[500px] md:h-[600px] lg:h-[700px] flex items-center justify-center overflow-hidden px-8">
+      <div className="text-center relative z-10 text-white">
+        <h1 className="text-3xl md:text-4xl font-bold mb-4">
           Aprende nuevas habilidades en línea
         </h1>
-        <p className="text-lg md:text-xl mb-8">
-          Explora nuestra amplia selección de cursos en línea y desarrolla tus habilidades a tu propio ritmo. Ya sea que estés buscando avanzar en tu carrera, aprender un nuevo hobby, o simplemente expandir tu conocimiento, tenemos el curso perfecto para ti.
+        <p className="mb-8">
+          Explora nuestra amplia selección de cursos en línea y desarrolla tus
+          habilidades a tu propio ritmo.
         </p>
-        <div className="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4">
+        <div className="flex justify-center space-x-4">
           <button
             onClick={handleStartNowClick}
-            className="bg-[#D91604] text-white px-6 py-3 transition duration-300 transform hover:scale-105 hover:bg-red-700"
-            aria-label="Explorar Cursos"
+            className="bg-[#D91604] text-white hover:bg-red-700 px-4 py-2 transition duration-200"
           >
             Explorar Cursos
           </button>
           <button
             onClick={handleLearnMoreClick}
-            className="bg-[#20818C] text-white px-6 py-3 transition duration-300 transform hover:scale-105 hover:bg-teal-700"
-            aria-label="Nosotros"
+            className="bg-[#20818C] text-white hover:bg-teal-700 px-4 py-2 transition duration-200"
           >
             Nosotros
           </button>
         </div>
       </div>
+      <video
+        id="hero-video"
+        className="absolute inset-0 w-full h-full object-cover"
+        autoPlay
+        muted
+        loop
+      >
+        <source src={headerBackgroundVideo} type="video/mp4" />
+      </video>
+      <div className="absolute inset-0 bg-black opacity-50"></div>
     </div>
   );
 };

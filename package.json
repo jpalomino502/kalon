@@ -37,6 +37,7 @@
     "react-responsive-carousel": "^3.2.23",
     "react-router-dom": "^6.23.1",
     "react-scripts": "5.0.1",
+    "react-select": "^5.8.0",
     "react-spinners": "^0.13.8",
     "react-spring": "^9.7.3",
     "react-stripe-js": "^1.1.5",

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { db } from '../../config/firebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, addDoc, getDocs } from 'firebase/firestore';
 import LoadingSkeleton from '../Loading/LoadingSkeleton';
+import { FaStar } from 'react-icons/fa';
 
 const CourseDetail = ({ onAddToCart }) => {
   const { courseId } = useParams();
@@ -10,7 +11,11 @@ const CourseDetail = ({ onAddToCart }) => {
   const [loading, setLoading] = useState(true);
   const [videoError, setVideoError] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
-
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
+  const [rating, setRating] = useState(0);
+  const [averageRating, setAverageRating] = useState(0);
+  const [activeTab, setActiveTab] = useState('valoraciones');
   useEffect(() => {
     const fetchCourse = async () => {
       try {
@@ -28,11 +33,46 @@ const CourseDetail = ({ onAddToCart }) => {
       }
     };
 
+    const fetchComments = async () => {
+      try {
+        const commentsCollection = collection(db, 'courses', courseId, 'commentsAndRatings');
+        const commentsSnap = await getDocs(commentsCollection);
+        const commentsList = commentsSnap.docs.map(doc => doc.data());
+        setComments(commentsList);
+
+        const totalRating = commentsList.reduce((acc, comment) => acc + comment.rating, 0);
+        const average = commentsList.length ? totalRating / commentsList.length : 0;
+        setAverageRating(average);
+      } catch (error) {
+        console.error('Error fetching comments:', error);
+      }
+    };
+
     fetchCourse();
+    fetchComments();
   }, [courseId]);
 
   const handleVideoError = () => {
     setVideoError(true);
+  };
+
+  const handleAddComment = async () => {
+    if (newComment.trim() !== '' && rating > 0) {
+      try {
+        const commentData = {
+          text: newComment,
+          rating: rating,
+          createdAt: new Date(),
+        };
+        const commentsCollection = collection(db, 'courses', courseId, 'commentsAndRatings');
+        await addDoc(commentsCollection, commentData);
+        setComments([...comments, commentData]);
+        setNewComment('');
+        setRating(0);
+      } catch (error) {
+        console.error('Error adding comment:', error);
+      }
+    }
   };
 
   if (loading) {
@@ -118,6 +158,74 @@ const CourseDetail = ({ onAddToCart }) => {
           )}
         </div>
       </div>
+      <div className="mt-8">
+            <div className="flex justify-around border-b">
+              <button
+                className={`py-2 px-4 ${activeTab === 'valoraciones' ? 'border-b-2 border-red-600' : ''}`}
+                onClick={() => setActiveTab('valoraciones')}
+              >
+                Valoraciones
+              </button>
+              <button
+                className={`py-2 px-4 ${activeTab === 'preguntas' ? 'border-b-2 border-red-600' : ''}`}
+                onClick={() => setActiveTab('preguntas')}
+              >
+                Preguntas
+              </button>
+            </div>
+
+            {activeTab === 'valoraciones' && (
+              <div>
+                <h2 className="text-2xl font-bold mt-4">Valoraciones y Comentarios</h2>
+                <p className="text-gray-800 mb-4">Promedio de valoraciones: {averageRating.toFixed(1)} / 5</p>
+                {comments.map((comment, index) => (
+                  <div key={index} className="border-t pt-4 mt-4">
+                    <p className="text-gray-700">{comment.text}</p>
+                    <div className="flex">
+                      {[...Array(5)].map((_, starIndex) => (
+                        <FaStar
+                          key={starIndex}
+                          size={20}
+                          color={starIndex < comment.rating ? "#ffc107" : "#e4e5e9"}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                <div className="mt-4">
+                  <textarea
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    placeholder="Escribe un comentario..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                  />
+                  <div className="flex items-center mt-2">
+                    <span className="mr-2">Valoración:</span>
+                    {[...Array(5)].map((_, starIndex) => (
+                      <FaStar
+                        key={starIndex}
+                        size={20}
+                        color={starIndex < rating ? "#ffc107" : "#e4e5e9"}
+                        onClick={() => setRating(starIndex + 1)}
+                        className="cursor-pointer"
+                      />
+                    ))}
+                  </div>
+                  <button className="bg-blue-600 text-white py-2 px-4 mt-4" onClick={handleAddComment}>
+                    Agregar Comentario
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'preguntas' && (
+              <div>
+                <h2 className="text-2xl font-bold mt-4">Preguntas</h2>
+                <p className="text-gray-700 mb-4">Aquí puedes ver y hacer preguntas sobre el curso.</p>
+                {/* Aquí puedes añadir la lógica para mostrar y agregar preguntas */}
+              </div>
+            )}
+          </div>
     </div>
   );
 };

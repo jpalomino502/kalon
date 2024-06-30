@@ -5,7 +5,7 @@ import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import PrivateRoute from "./components/Routes/PrivateRoute";
 import LoadingSkeleton from "./components/Loading/LoadingSkeleton";
-import CheckoutForm from "./components/CheckoutForm/CheckoutForm"; 
+import CheckoutForm from "./components/CheckoutForm/CheckoutForm";
 import HeroCarousel from "./components/Home/Hero"; // Importar el componente Hero
 
 const Home = React.lazy(() => import("./pages/Home"));
